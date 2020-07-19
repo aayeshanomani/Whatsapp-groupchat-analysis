@@ -50,13 +50,17 @@ print(len(msgs))
 
 print(msgs[0:10])
 
-time = [msgs[i].split(',')[1].split('-')[0] for i in range(len(msgs)) if len(msgs[i].split(','))>1]
-time = [s.strip(' ') for s in time] # Remove spacing
+time = [msgs[i].split('-')[0].strip().split(',')[1].strip() for i in range(len(msgs)) if len(msgs[i].split('-')[0].strip().split(','))>1 and ':' in msgs[i].split('-')[0].strip().split(',')[1]]
+time = [s for s in time if len(s) == 5]
+print(time)
 print("length of time is:")
 print(len(time))
 #print(time)
 
-date = [msgs[i].split(',')[0] for i in range(len(msgs))]
+date = [msgs[i].split('-')[0].strip().split(',')[0] 
+  for i in range(len(msgs)) 
+  if '/' in msgs[i].split('-')[0].strip().split(',')[0] 
+  and len(msgs[i].split('-')[0].strip().split(',')[0]) == 8]
 print(len(date))
 
 name = [msgs[i].split('-')[1].split(':')[0] for i in range(len(msgs))]
@@ -72,3 +76,22 @@ print(len(content))
 
 df = pd.DataFrame(list(zip(date, time, name, content)), columns = ['Date', 'Time', 'Name', 'Content'])
 print(df.head())
+
+df = df[df["Content"]!='Missing Text']
+df.reset_index(inplace=True, drop=True)
+print(len(df))
+print(df[100:])
+
+df['DateTime'] = pd.to_datetime(df['Date'] + ' ' + df['Time'])
+print(df['DateTime'])
+
+df['Weekday'] = df['DateTime'].apply(lambda x: x.day_name())
+
+df['Letter_Count'] = df['Content'].apply(lambda s : len(s))
+df['Word_Count'] = df['Content'].apply(lambda s : len(s.split(' ')))
+
+df['Hour'] = df['Time'].apply(lambda x : x.split(':')[0])
+
+print(df.head())
+
+df.to_csv(file.split('.')[0]+".csv")
